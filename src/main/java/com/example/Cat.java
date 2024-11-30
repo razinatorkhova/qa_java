@@ -6,8 +6,8 @@ public class Cat {
 
     Predator predator;
 
-    public Cat(Feline feline) {
-        this.predator = feline;
+    public Cat(Predator predatorMock) {
+        this.predator = predatorMock;
     }
 
     public String getSound() {
