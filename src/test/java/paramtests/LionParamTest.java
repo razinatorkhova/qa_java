@@ -1,52 +1,58 @@
 package paramtests;
 
+import org.junit.Assert;
 import org.junit.Test;
-import com.example.Lion;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import static org.junit.Assert.*;
-
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import com.example.Feline;
+import com.example.Lion;
+import org.junit.Before;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.List;
+
 
 @RunWith(Parameterized.class)
 public class LionParamTest {
 
-    private String sex;
-    private boolean expectedHasMane;
-    private boolean shouldThrowException;
+    Lion lion;
 
-    public LionParamTest(String sex, boolean expectedHasMane, boolean shouldThrowException) {
+    @Mock
+    Feline felineMock;
+
+    private final String sex;
+    private final boolean expectedHasMane;
+    private final List<String> expectedFood;
+
+    public LionParamTest(String sex, boolean expectedHasMane, List<String> expectedFood) {
         this.sex = sex;
         this.expectedHasMane = expectedHasMane;
-        this.shouldThrowException = shouldThrowException;
+        this.expectedFood = expectedFood;
     }
 
-    @Parameterized.Parameters
-    public static Collection<Object[]> data() {
+    @Parameterized.Parameters(name = "Пол: {0} Наличие гривы: {1}, ожидаемая еда: {1}")
+    public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][] {
-                { "Самец", true, false },  // ожидается, что у самца есть грива
-                { "Самка", false, false }, // ожидается, что у самки нет гривы
-                { "Некорректное значение", false, true } // ожидается выброс исключения
+                { "Самец", true, Arrays.asList("Животные", "Птицы", "Рыба") },
+                { "Самка", false, Arrays.asList("Животные", "Птицы", "Рыба") }
         });
     }
 
-    @Test
-    public void testLionConstructor() {
-        if (shouldThrowException) {
-            try {
-                new Lion(sex);
-                fail("Ожидалось исключение, но его не было.");
-            } catch (Exception e) {
-                assertEquals("Используйте допустимые значения пола животного - самец или самка", e.getMessage());
-            }
-        } else {
-            try {
-                Lion lion = new Lion(sex);
-                assertEquals(expectedHasMane, lion.doesHaveMane());
-            } catch (Exception e) {
-                fail("Не должно было возникнуть исключение: " + e.getMessage());
-            }
-        }
+    @Before
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
     }
+
+    @Test
+    public void lionCreationTest() throws Exception {
+        lion = new Lion(sex, felineMock);
+        Mockito.when(felineMock.getFood("Хищник")).thenReturn(expectedFood);
+        // Проверяем список пищи
+        Assert.assertEquals("Неверная список пищи", expectedFood, lion.getFood());
+        // Проверяем наличие гривы
+        Assert.assertEquals("Грива должна быть", expectedHasMane, lion.doesHaveMane());
+    }
+
 }

@@ -1,77 +1,49 @@
 package paramtests;
 
-import com.example.Predator;
-import org.junit.Before;
+import com.example.Feline;
+import com.example.Cat;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import com.example.Cat;
-
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
 
 @RunWith(Parameterized.class)
 public class CatParamTest {
 
-    private Cat cat;
-    private Predator predatorMock;
-    private List<String> expectedFood;
-    private Class<? extends Exception> expectedException;
+    private final Feline feline;
+    private final String expectedSound;
+    private final List<String> expectedFood;
 
-    @Parameterized.Parameters
-    public static Object[][] data() {
-        return new Object[][]{
-                {new PredatorMock(Arrays.asList("Курица", "Рыба")), Arrays.asList("Курица", "Рыба"), null},
-                {new PredatorMock(Collections.emptyList()), Collections.emptyList(), null},
-                {new PredatorMockWithException(), null, Exception.class}
-        };
-    }
-
-    public CatParamTest(Predator predatorMock, List<String> expectedFood, Class<? extends Exception> expectedException) {
-        this.predatorMock = predatorMock;
+    public CatParamTest(Feline feline, String expectedSound, List<String> expectedFood) {
+        this.feline = feline;
+        this.expectedSound = expectedSound;
         this.expectedFood = expectedFood;
-        this.expectedException = expectedException;
     }
 
-    @Before
-    public void setUp() {
-        cat = new Cat(predatorMock);
+    @Parameterized.Parameters(name = "Тестовые данные: Feline={0}, expectedSound={1}, expectedFood={2}")
+    public static Iterable<Object[]> data() {
+        Feline feline1 = new Feline();
+        Feline feline2 = new Feline();
+        return Arrays.asList(new Object[][]{
+                        {feline1, "Мяу", Arrays.asList("Животные", "Птицы", "Рыба")},
+                        {feline2, "Мяу", Arrays.asList("Животные", "Птицы", "Рыба")} // Тестовые данные для второй кошки}
+                });
+    }
+
+    @Test
+    public void testGetSound() {
+        Cat cat = new Cat(feline);
+        assertEquals("Неверный звук", expectedSound, cat.getSound());
     }
 
     @Test
     public void testGetFood() throws Exception {
-        if (expectedException != null) {
-            assertThrows(expectedException, () -> cat.getFood());
-        } else {
-            assertEquals(expectedFood, cat.getFood());
-        }
-    }
-
-    // Мок классы для тестирования
-    private static class PredatorMock implements Predator {
-        private final List<String> food;
-
-        public PredatorMock(List<String> food) {
-            this.food = food;
-        }
-
-        @Override
-        public List<String> eatMeat() {
-            return food;
-        }
-    }
-
-    private static class PredatorMockWithException implements Predator {
-        @Override
-        public List<String> eatMeat() throws Exception {
-            throw new Exception("Ошибка при получении еды");
-        }
+        Cat cat = new Cat(feline);
+        assertEquals("Неверная еда", expectedFood, cat.getFood());
     }
 }
-
-
